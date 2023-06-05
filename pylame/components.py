@@ -2,6 +2,13 @@ from __future__ import annotations
 import pygame
 
 
+class Alignment:
+
+    CENTER_HORIZONTAL = 0
+    CENTER_VERTICAL = 1
+    CENTER = 2
+
+
 class Component:
     def __init__(self, size, pos, bg_color=None, name="", parent=None):
         self.size = size
@@ -35,7 +42,15 @@ class Component:
     def on_hover(self):
         pass
 
+    def get_root(self):
+        if self.parent:
+            return self.parent.get_root()
+        return self
+
     def on_press(self, *args, **kwargs):
+        pass
+
+    def on_release(self, *args, **kwargs):
         pass
 
 
@@ -102,12 +117,6 @@ class Button(Component):
 
     def on_hover(self):
         self.hovered = True
-
-
-class Alignment:
-    CENTER_HORIZONTAL = 0
-    CENTER_VERTICAL = 1
-    CENTER = 2
 
 
 class Sizer:
@@ -181,6 +190,63 @@ class Sizer:
             if self.center_h:
                 x += center_x - total_component_width/2
             comp.pos = (x, y)
+
+
+class Slider(Component):
+    def __init__(self, size, pos, bg_color=None, name="", parent=None, knob_color=None, slider_color=None):
+        super().__init__(size, pos, bg_color=bg_color, name=name, parent=parent)
+
+        self.knob_color = (0, 0, 255)
+        self.slider_color = (255, 0, 0)
+
+        if knob_color:
+            self.knob_color = knob_color
+        if slider_color:
+            self.slider_color = slider_color
+
+        self.min_value = 0
+        self.max_value = 100
+        self.value = 0.5
+
+    def on_press(self, button):
+        if button == pygame.BUTTON_LEFT:
+            root: LameUI = self.get_root()
+            root.selected_component = self
+
+    def handle_selected(self, mouse_x, mouse_y):
+        slider_x, slider_y = self.pos
+
+        width, height = self.size
+        knob_radius = height/2
+        bar_width = width - knob_radius*2
+
+        value = (mouse_x-(slider_x+knob_radius))/bar_width
+
+        value = max(0, min(1, value))
+        self.value = value
+
+    def redraw(self):
+        rect = self.surface.get_rect()
+
+        pygame.draw.rect(self.surface, self.bg_color, rect)
+
+        width, height = self.size
+        knob_radius = height/2
+
+        bar_width = width - knob_radius*2
+        bar_height = height*0.45
+
+        x = knob_radius
+        y = height/2 - bar_height/2
+        rect = pygame.Rect(x, y, bar_width, bar_height)
+        pygame.draw.rect(self.surface, self.slider_color, rect)
+
+        knob_x = bar_width*self.value+knob_radius
+
+        knob_y = height/2
+
+        pygame.draw.circle(self.surface, self.knob_color,
+                           (knob_x, knob_y), knob_radius)
 
 
 class Panel(Component):
@@ -277,8 +343,17 @@ class Panel(Component):
 
 
 class LameUI(Panel):
+    def __init__(self, size, pos, bg_color=None, name="", parent=None):
+        super().__init__(size, pos, bg_color, name, parent)
+
+        self.selected_component: Component | None = None
+
     def process_mouse_pos(self):
         mouse_x, mouse_y = pygame.mouse.get_pos()
+
+        if self.selected_component is not None:
+            self.selected_component.handle_selected(mouse_x, mouse_y)
+
         hovered_component = self.get_component_at(mouse_x, mouse_y)
 
         if isinstance(hovered_component, Button):
@@ -296,3 +371,13 @@ class LameUI(Panel):
 
         if hovered_component is not None:
             hovered_component.on_press(button)
+
+    def on_mouse_release(self, button):
+        if self.selected_component is not None:
+            self.selected_component.on_release()
+            self.selected_component = None
+        # mouse_x, mouse_y = pygame.mouse.get_pos()
+        # hovered_component = self.get_component_at(mouse_x, mouse_y)
+
+        # if hovered_component is not None:
+            # hovered_component.on_press(button)
