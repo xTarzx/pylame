@@ -13,7 +13,8 @@ FPS = 60
 lameui = LameUI((window_width, window_height),
                 (0, 0), (88, 88, 88), name="lameui")
 
-panel1 = Panel((160, 400), (0, 0), (55, 55, 55), name="panel1")
+panel1 = Panel((160, 400), (0, 0), (55, 55, 55),
+               name="panel1", border_radius=16)
 
 
 button1 = Button(size=(100, 30), pos=(0, 0),
@@ -30,9 +31,9 @@ button1.on_press = lambda _: set_caption(f"clicked {button1.name}")
 button2.on_press = lambda _: set_caption(f"clicked {button2.name}")
 
 
-# panel1.add(Text("wakanda", 32))
 panel1.add(button1)
 panel1.add(button2)
+panel1.add(Text("wakanda", 32))
 
 lameui.add(panel1)
 

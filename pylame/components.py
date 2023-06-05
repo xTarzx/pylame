@@ -8,15 +8,18 @@ class Component:
         self.pos = pos
         self.base_pos = pos
         self.bg_color = bg_color
+        if self.bg_color is None:
+            self.bg_color = (0, 0, 0, 0)
+        elif len(self.bg_color) == 3:
+            self.bg_color = self.bg_color + (255,)
         self.name = name
         self.parent: Component | None = parent
         self.surface = pygame.Surface(size, pygame.SRCALPHA)
 
         self.highlight_color = None
         scale = 1.3
-        if self.bg_color:
-            self.highlight_color = (min(self.bg_color[0]*scale, 255), min(
-                self.bg_color[1]*scale, 255), min(self.bg_color[2]*scale, 255))
+        self.highlight_color = (min(self.bg_color[0]*scale, 255), min(
+            self.bg_color[1]*scale, 255), min(self.bg_color[2]*scale, 255), min(self.bg_color[3]*scale, 255))
 
     def get_surface(self):
         return self.surface
@@ -64,7 +67,7 @@ class Text(Component):
 
 class Button(Component):
     def __init__(self, size, pos, color=None, name="", parent=None, text="", font_size=None, font_color=None, border_radius=0):
-        super().__init__(size, pos, color, name, parent)
+        super().__init__(size=size, pos=pos, bg_color=color, name=name, parent=parent)
         self.hovered = False
         self.border_radius = border_radius
 
@@ -80,12 +83,11 @@ class Button(Component):
 
         rect = self.surface.get_rect()
 
-        if self.bg_color is not None:
-            pygame.draw.rect(self.surface, self.bg_color,
-                             rect, border_radius=self.border_radius)
-            # self.surface.fill(self.bg_color)
+        pygame.draw.rect(self.surface, self.bg_color,
+                         rect, border_radius=self.border_radius)
+        # self.surface.fill(self.bg_color)
 
-        if self.hovered and self.highlight_color:
+        if self.hovered:
             pygame.draw.rect(self.surface, self.highlight_color,
                              rect, border_radius=self.border_radius)
             # self.surface.fill(self.highlight_color)
@@ -178,10 +180,11 @@ class Sizer:
 
 
 class Panel(Component):
-    def __init__(self, size, pos, bg_color=None, name="", parent=None):
-        super().__init__(size, pos, bg_color, name, parent)
+    def __init__(self, size, pos, bg_color=None, name="", parent=None, border_radius=0):
+        super().__init__(size=size, pos=pos, bg_color=bg_color, name=name, parent=parent)
         self.components: list[Component] = []
         self.sizer = Sizer(self)
+        self.border_radius = border_radius
 
     def get_component_at(self, mouse_x, mouse_y) -> Component | None:
         # print(self, "get_component_at", mouse_x, mouse_y)
@@ -249,7 +252,11 @@ class Panel(Component):
         self.redraw()
 
     def redraw(self):
-        self.surface.fill(self.bg_color)
+        rect = self.surface.get_rect()
+
+        pygame.draw.rect(self.surface, self.bg_color, rect,
+                         border_radius=self.border_radius)
+        # self.surface.fill(self.bg_color)
         for comp in self.components:
             comp.redraw()
 
