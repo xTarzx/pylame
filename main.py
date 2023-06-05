@@ -34,6 +34,7 @@ button2.on_press = lambda _: set_caption(f"clicked {button2.name}")
 panel1.add(button1)
 panel1.add(button2)
 panel1.add(Text("wakanda", 32))
+panel1.set_space_between(10)
 
 lameui.add(panel1)
 

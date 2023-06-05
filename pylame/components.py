@@ -114,11 +114,13 @@ class Sizer:
     VERTICAL = 0
     HORIZONTAL = 1
 
-    def __init__(self, parent: Panel, direction: int = 0):
+    def __init__(self, parent: Panel, direction: int = 0, space_between=0):
         self.parent = parent
         self.direction = direction
         self.center_h = False
         self.center_v = False
+
+        self.space_between = space_between
 
     def set_direction(self, direction: int):
         self.direction = direction
@@ -148,9 +150,11 @@ class Sizer:
                 continue
             if self.direction == Sizer.HORIZONTAL:
                 total_component_width += comp_width
+                total_component_width += self.space_between
 
             elif self.direction == Sizer.VERTICAL:
                 total_component_height += comp_height
+                total_component_height += self.space_between
 
         for comp in self.parent.components:
             if isinstance(comp, Panel):
@@ -166,11 +170,11 @@ class Sizer:
 
             if self.direction == Sizer.VERTICAL:
                 y += offset
-                offset += comp_height
+                offset += comp_height + self.space_between
 
             elif self.direction == Sizer.HORIZONTAL:
                 x += offset
-                offset += comp_width
+                offset += comp_width + self.space_between
 
             if self.center_v:
                 y += center_y - total_component_height/2
@@ -233,6 +237,10 @@ class Panel(Component):
     def set_direction(self, direction: int):
         # direction : Sizer.VERTICAL | Sizer.HORIZONTAL
         self.sizer.set_direction(direction)
+        self.recalculate()
+
+    def set_space_between(self, value: int):
+        self.sizer.space_between = value
         self.recalculate()
 
     def align(self, alignment: Alignment):
