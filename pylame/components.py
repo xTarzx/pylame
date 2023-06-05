@@ -63,9 +63,10 @@ class Text(Component):
 
 
 class Button(Component):
-    def __init__(self, size, pos, color=None, name="", parent=None, text="", font_size=None, font_color=None):
+    def __init__(self, size, pos, color=None, name="", parent=None, text="", font_size=None, font_color=None, border_radius=0):
         super().__init__(size, pos, color, name, parent)
         self.hovered = False
+        self.border_radius = border_radius
 
         self.components = []
         self.sizer = Sizer(self)
@@ -77,11 +78,17 @@ class Button(Component):
     def redraw(self):
         self.sizer.calc_pos()
 
-        if self.bg_color is not None:
-            self.surface.fill(self.bg_color)
+        rect = self.surface.get_rect()
 
-        if self.hovered:
-            self.surface.fill(self.highlight_color)
+        if self.bg_color is not None:
+            pygame.draw.rect(self.surface, self.bg_color,
+                             rect, border_radius=self.border_radius)
+            # self.surface.fill(self.bg_color)
+
+        if self.hovered and self.highlight_color:
+            pygame.draw.rect(self.surface, self.highlight_color,
+                             rect, border_radius=self.border_radius)
+            # self.surface.fill(self.highlight_color)
 
         self.surface.blit(self.text.get_surface(), self.text.pos)
         # rendered_text = self.text.render()

@@ -1,6 +1,6 @@
 import pygame
 
-from pylame.components import Button, Panel, Sizer, Alignment, LameUI
+from pylame.components import Button, Panel, Sizer, Alignment, LameUI, Text
 
 window_width, window_height = 1024, 768
 
@@ -17,7 +17,7 @@ panel1 = Panel((160, 400), (0, 0), (55, 55, 55), name="panel1")
 
 
 button1 = Button(size=(100, 30), pos=(0, 0),
-                 color=(50, 10, 220), name="button1", text="button1")
+                 color=(50, 10, 220), name="button1", text="button1", border_radius=12)
 button2 = Button(size=(100, 30), pos=(0, 0),
                  color=(10, 180, 50), name="button2", text="click")
 
@@ -29,6 +29,8 @@ def set_caption(text):
 button1.on_press = lambda _: set_caption(f"clicked {button1.name}")
 button2.on_press = lambda _: set_caption(f"clicked {button2.name}")
 
+
+# panel1.add(Text("wakanda", 32))
 panel1.add(button1)
 panel1.add(button2)
 
