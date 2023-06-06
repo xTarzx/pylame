@@ -37,7 +37,7 @@ class Component:
     def __str__(self) -> str:
         if self.name:
             return self.name
-        return self.__repr__
+        return self.__repr__()
 
     def on_hover(self):
         pass
@@ -67,13 +67,20 @@ class Text(Component):
 
         self.text = text
 
-        font = pygame.font.Font(pygame.font.get_default_font(), self.font_size)
-        self.render = font.render(self.text, True, self.font_color)
-        self.size = self.render.get_size()
+        self.__render_text()
 
         # width, height = self.parent.size
         # rect = rendered_text.get_rect()
         # rect.center = (width/2, height/2)
+
+    def __render_text(self):
+        font = pygame.font.Font(pygame.font.get_default_font(), self.font_size)
+        self.render = font.render(self.text, True, self.font_color)
+        self.size = self.render.get_size()
+
+    def set_text(self, text):
+        self.text = text
+        self.__render_text()
 
     def redraw(self):
         self.surface = pygame.Surface(self.size, pygame.SRCALPHA)
@@ -157,12 +164,11 @@ class Sizer:
                 total_component_width = comp_width
                 total_component_height = comp_height
                 continue
+            total_component_width += comp_width
+            total_component_height += comp_height
             if self.direction == Sizer.HORIZONTAL:
-                total_component_width += comp_width
                 total_component_width += self.space_between
-
             elif self.direction == Sizer.VERTICAL:
-                total_component_height += comp_height
                 total_component_height += self.space_between
 
         for comp in self.parent.components:
@@ -181,19 +187,27 @@ class Sizer:
                 y += offset
                 offset += comp_height + self.space_between
 
+                if self.center_h:
+                    x += center_x - comp_width/2
+
+                if self.center_v:
+                    y += center_y - total_component_height/2
+
             elif self.direction == Sizer.HORIZONTAL:
                 x += offset
                 offset += comp_width + self.space_between
 
-            if self.center_v:
-                y += center_y - total_component_height/2
-            if self.center_h:
-                x += center_x - total_component_width/2
+                if self.center_h:
+                    x += center_x - total_component_width/2
+
+                if self.center_v:
+                    y += center_y - comp_height/2
+
             comp.pos = (x, y)
 
 
 class Slider(Component):
-    def __init__(self, size, pos, bg_color=None, name="", parent=None, knob_color=None, slider_color=None):
+    def __init__(self, size, pos, bg_color=None, name="", parent=None, knob_color=None, slider_color=None, min_value=0, max_value=1, start_value=None):
         super().__init__(size, pos, bg_color=bg_color, name=name, parent=parent)
 
         self.knob_color = (0, 0, 255)
@@ -204,9 +218,21 @@ class Slider(Component):
         if slider_color:
             self.slider_color = slider_color
 
-        self.min_value = 0
-        self.max_value = 100
+        assert min_value < max_value
+        assert max_value > 0
+        self.min_value = min_value
+        self.max_value = max_value
+
         self.value = 0.5
+
+        if start_value is not None:
+            value = (start_value-self.min_value) / \
+                (self.max_value-self.min_value)
+            value = max(0, min(1, value))
+            self.value = value
+
+    def get_value(self):
+        return ((self.max_value-self.min_value)*self.value)+self.min_value
 
     def on_press(self, button):
         if button == pygame.BUTTON_LEFT:
@@ -214,13 +240,16 @@ class Slider(Component):
             root.selected_component = self
 
     def handle_selected(self, mouse_x, mouse_y):
+
         slider_x, slider_y = self.pos
+
+        parent_x, parent_y = self.parent.pos
 
         width, height = self.size
         knob_radius = height/2
         bar_width = width - knob_radius*2
 
-        value = (mouse_x-(slider_x+knob_radius))/bar_width
+        value = ((mouse_x-parent_x)-(slider_x+knob_radius))/bar_width
 
         value = max(0, min(1, value))
         self.value = value
