@@ -101,6 +101,10 @@ class Text(Component):
         self.text = text
         self.__render_text()
 
+    def set_font_color(self, color):
+        self.font_color = color
+        self.__render_text()
+
     def redraw(self):
         self.surface = pygame.Surface(self.size, pygame.SRCALPHA)
         self.surface.blit(self.render, (0, 0))
@@ -126,13 +130,12 @@ class Button(Component):
 
         pygame.draw.rect(self.surface, self.bg_color,
                          rect, border_radius=self.border_radius)
-        # self.surface.fill(self.bg_color)
 
         if self.hovered:
             pygame.draw.rect(self.surface, self.highlight_color,
                              rect, border_radius=self.border_radius)
 
-        self.surface.blit(self.text.get_surface(), (0, 0))
+        self.surface.blit(self.text.get_surface(), self.text.pos)
 
     def on_hover(self):
         self.hovered = True
