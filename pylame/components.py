@@ -24,9 +24,16 @@ class Component:
         self.surface = pygame.Surface(size, pygame.SRCALPHA)
 
         self.highlight_color = None
-        scale = 1.3
-        self.highlight_color = (min(self.bg_color[0]*scale, 255), min(
-            self.bg_color[1]*scale, 255), min(self.bg_color[2]*scale, 255), min(self.bg_color[3]*scale, 255))
+        scale = 80
+
+        r, g, b, a = self.bg_color
+
+        r = min(r+scale, 255)
+        g = min(g+scale, 255)
+        b = min(b+scale, 255)
+        a = min(a+scale, 255)
+
+        self.highlight_color = (r, g, b, a)
 
     def get_surface(self):
         return self.surface
@@ -52,6 +59,15 @@ class Component:
 
     def on_release(self, *args, **kwargs):
         pass
+
+    def get_abs_pos(self):
+        pos_x, pos_y = self.pos
+
+        if self.parent is not None:
+            px, py = self.parent.get_abs_pos()
+            pos_x += px
+            pos_y += py
+        return pos_x, pos_y
 
 
 class Text(Component):
@@ -112,15 +128,8 @@ class Button(Component):
         if self.hovered:
             pygame.draw.rect(self.surface, self.highlight_color,
                              rect, border_radius=self.border_radius)
-            # self.surface.fill(self.highlight_color)
 
         self.surface.blit(self.text.get_surface(), self.text.pos)
-        # rendered_text = self.text.render()
-        # width, height = self.size
-        # rect = rendered_text.get_rect()
-        # rect.center = (width/2, height/2)
-
-        # self.surface.blit(rendered_text, rect)
 
     def on_hover(self):
         self.hovered = True
@@ -241,21 +250,20 @@ class Slider(Component):
 
     def handle_selected(self, mouse_x, mouse_y):
 
-        slider_x, slider_y = self.pos
-
-        parent_x, parent_y = self.parent.pos
+        slider_x, slider_y = self.get_abs_pos()
 
         width, height = self.size
         knob_radius = height/2
         bar_width = width - knob_radius*2
 
-        value = ((mouse_x-parent_x)-(slider_x+knob_radius))/bar_width
+        value = (mouse_x-(slider_x+knob_radius))/bar_width
 
         value = max(0, min(1, value))
         self.value = value
 
     def redraw(self):
         rect = self.surface.get_rect()
+        self.surface.fill((0, 0, 0, 0), rect)
 
         pygame.draw.rect(self.surface, self.bg_color, rect)
 
@@ -286,33 +294,24 @@ class Panel(Component):
         self.border_radius = border_radius
 
     def get_component_at(self, mouse_x, mouse_y) -> Component | None:
-        # print(self, "get_component_at", mouse_x, mouse_y)
-        rect = pygame.Rect(self.pos[0], self.pos[1],
+        pos_x, pos_y = self.get_abs_pos()
+
+        rect = pygame.Rect(pos_x, pos_y,
                            self.size[0], self.size[1])
         if not rect.collidepoint(mouse_x, mouse_y):
             return None
 
         for comp in self.components:
-            # print("component:", comp)
-            # print("   pos :", comp.pos)
-            # print("   size:", comp.size)
 
-            pos_x, pos_y = comp.pos
+            pos_x, pos_y = comp.get_abs_pos()
+            comp_w, comp_h = comp.size
 
-            if isinstance(comp, Panel):
-                panel_comp = comp.get_component_at(mouse_x, mouse_y)
-                if panel_comp is not None:
-                    return panel_comp
-
-            comp_parent_x, comp_parent_y = comp.parent.pos
-
-            pos_x += comp_parent_x
-            pos_y += comp_parent_y
-
-            rect = pygame.Rect(
-                pos_x, pos_y, comp.size[0], comp.size[1])
+            rect = pygame.Rect(pos_x, pos_y, comp_w, comp_h)
 
             if rect.collidepoint(mouse_x, mouse_y):
+                if isinstance(comp, Panel):
+                    return comp.get_component_at(mouse_x, mouse_y)
+
                 return comp
 
         return self
@@ -355,11 +354,12 @@ class Panel(Component):
         self.redraw()
 
     def redraw(self):
+
         rect = self.surface.get_rect()
+        self.surface.fill((0, 0, 0, 0), rect)
 
         pygame.draw.rect(self.surface, self.bg_color, rect,
                          border_radius=self.border_radius)
-        # self.surface.fill(self.bg_color)
         for comp in self.components:
             comp.redraw()
 

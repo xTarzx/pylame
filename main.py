@@ -13,23 +13,21 @@ FPS = 60
 lameui = LameUI((window_width, window_height),
                 (0, 0), (33, 33, 33), name="lameui")
 
-text1 = Text("test1", 12)
-
-button1 = Button((100, 30), (0, 0), (220, 120, 20),
-                 name="button1", text="button1")
-
 slider1 = Slider((400, 30), (0, 0), bg_color=None, name="slider",
-                 knob_color=(220, 100, 120), slider_color=(88, 88, 88), min_value=50, max_value=100, start_value=None)
-text2 = Text("", 20)
+                 knob_color=(220, 100, 120), slider_color=(120, 150, 88), min_value=0, max_value=100, start_value=None)
 
-panel = Panel((600, 300), (0, 0), (55, 55, 55), name="panel", border_radius=16)
-panel.align(Alignment.CENTER_HORIZONTAL)
-panel.add(text1)
-panel.add(button1)
-panel.add(slider1)
-panel.add(text2)
+button1 = Button((100, 30), (0, 0), (255, 0, 0), "button1", text="click")
 
-lameui.add(panel)
+panel1 = Panel((600, 300), (0, 0), (55, 55, 55),
+               name="panel1", border_radius=16)
+panel2 = Panel((500, 250), (0, 0), (88, 88, 88),
+               name="panel2", border_radius=16)
+panel2.add(slider1)
+panel2.add(button1)
+panel1.align(Alignment.CENTER)
+panel1.add(panel2)
+lameui.add(panel1)
+
 
 lameui.align(Alignment.CENTER)
 
@@ -39,6 +37,10 @@ while run:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             run = False
+
+        elif event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_ESCAPE:
+                run = False
 
         elif event.type == pygame.VIDEORESIZE:
             lameui.resize(event.size)
@@ -52,10 +54,10 @@ while run:
         elif event.type == pygame.MOUSEBUTTONUP:
             lameui.on_mouse_release(event.button)
 
-    text2.set_text(f"{slider1.get_value():.2f}")
     lameui.process_mouse_pos()
 
     screen.blit(lameui.get_surface(), lameui.pos)
+
     pygame.display.update()
     clock.tick(FPS)
 
