@@ -56,7 +56,7 @@ while run:
 
     lameui.process_mouse_pos()
 
-    screen.blit(lameui.get_surface(), lameui.pos)
+    lameui.draw_to(screen)
 
     pygame.display.update()
     clock.tick(FPS)
