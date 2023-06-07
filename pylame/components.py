@@ -410,3 +410,6 @@ class LameUI(Panel):
 
         # if hovered_component is not None:
             # hovered_component.on_press(button)
+
+    def draw_to(self, surface: pygame.Surface):
+        surface.blit(self.get_surface(), self.pos)
