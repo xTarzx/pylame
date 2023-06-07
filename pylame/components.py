@@ -192,12 +192,13 @@ class Sizer:
             center_x = width/2
             center_y = height/2
 
-            x, y = comp.base_pos
+            base_x, base_y = comp.base_pos
+            x, y = base_x, base_y
             comp_width, comp_height = comp.size
 
             if self.direction == Sizer.VERTICAL:
                 y += offset
-                offset += comp_height + self.space_between
+                offset += comp_height + self.space_between + base_y
 
                 if self.center_h:
                     x += center_x - comp_width/2
@@ -207,7 +208,7 @@ class Sizer:
 
             elif self.direction == Sizer.HORIZONTAL:
                 x += offset
-                offset += comp_width + self.space_between
+                offset += comp_width + self.space_between + base_x
 
                 if self.center_h:
                     x += center_x - total_component_width/2
