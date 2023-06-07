@@ -71,8 +71,11 @@ class Component:
 
 
 class Text(Component):
-    def __init__(self, text, font_size=None, font_color=None):
-        super().__init__((0, 0), (0, 0))
+    def __init__(self, text, font_size=None, font_color=None, pos=None):
+        size = (0, 0)
+        if pos is None:
+            pos = (0, 0)
+        super().__init__(size, pos)
         self.font_size = 10
         if font_size:
             self.font_size = font_size
@@ -129,7 +132,7 @@ class Button(Component):
             pygame.draw.rect(self.surface, self.highlight_color,
                              rect, border_radius=self.border_radius)
 
-        self.surface.blit(self.text.get_surface(), self.text.pos)
+        self.surface.blit(self.text.get_surface(), (0, 0))
 
     def on_hover(self):
         self.hovered = True
