@@ -401,6 +401,15 @@ class LameUI(Panel):
         for button in buttons:
             button.hovered = False
 
+    def handle_events(self, events: list[pygame.event.Event]):
+        for event in events:
+            if event.type == pygame.VIDEORESIZE:
+                self.resize(event.size)
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                self.on_mouse_press(event.button)
+            elif event.type == pygame.MOUSEBUTTONUP:
+                self.on_mouse_release(event.button)
+
     def on_mouse_press(self, button):
         mouse_x, mouse_y = pygame.mouse.get_pos()
         hovered_component = self.get_component_at(mouse_x, mouse_y)
