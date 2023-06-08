@@ -138,6 +138,12 @@ class TextInput(Component):
         self.display_bar = True
         self.counter = 1300
 
+        self.__initial_delete_interval = 450
+
+        self.delete_interval = 0
+        self.reset_delete_interval()
+        self.deleting = False
+
         self.components.append(self.text_s)
 
     def redraw(self):
@@ -183,12 +189,25 @@ class TextInput(Component):
             self.counter = 2000
             self.display_bar = not self.display_bar
 
+        if self.deleting:
+            self.delete_interval -= dt
+            if self.delete_interval < 0:
+                self.reset_delete_interval()
+                self.__delete_char()
+
+    def reset_delete_interval(self):
+        self.delete_interval = 100
+
+    def __delete_char(self):
+        self.text = self.text[:-1]
+
     def on_select(self):
         self.editing = True
         self.display_bar = True
 
     def on_unselect(self):
         self.editing = False
+        self.deleting = False
 
     def on_press(self, button):
         if button == pygame.BUTTON_LEFT:
@@ -204,8 +223,13 @@ class TextInput(Component):
 
         elif event.type == pygame.KEYDOWN:
             if event.key == pygame.K_BACKSPACE:
-                self.text = self.text[:-1]
-                return
+                self.__delete_char()
+                self.delete_interval = self.__initial_delete_interval
+                self.deleting = True
+
+        elif event.type == pygame.KEYUP:
+            if event.key == pygame.K_BACKSPACE:
+                self.deleting = False
 
 
 class Button(Component):
@@ -521,6 +545,9 @@ class LameUI(Panel):
                 self.on_mouse_release(event.button)
 
             elif event.type == pygame.KEYDOWN:
+                if isinstance(self.selected_component, TextInput):
+                    self.selected_component.handle_event(event)
+            elif event.type == pygame.KEYUP:
                 if isinstance(self.selected_component, TextInput):
                     self.selected_component.handle_event(event)
 

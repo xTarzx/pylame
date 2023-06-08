@@ -1,5 +1,5 @@
 import pygame
-from pylame.components import LameUI, Alignment, TextInput
+from pylame.components import LameUI, Alignment, TextInput, Panel
 
 window_width, window_height = 1024, 768
 
@@ -16,9 +16,12 @@ lameui = LameUI((window_width, window_height), (0, 0),
                 bg_color=background_color, name="lameui")
 lameui.align(Alignment.CENTER)
 
+panel1 = Panel((600, 400), (0, 0), (55, 55, 55), border_radius=12)
+
 textinput = TextInput((500, 40), (0, 0),
                       bg_color=(88, 88, 88), text="wakanda")
-lameui.add(textinput)
+panel1.add(textinput)
+lameui.add(panel1)
 
 dt = 0
 run = True
