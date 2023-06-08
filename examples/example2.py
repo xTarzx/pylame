@@ -1,4 +1,3 @@
-from random import randint
 import pygame
 from pylame.components import LameUI, Text, Alignment, Slider
 

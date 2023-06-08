@@ -49,12 +49,24 @@ class Component:
     def on_hover(self):
         pass
 
+    def handle_mouse_selected(self, *args, **kwargs):
+        pass
+
+    def process(self, dt):
+        pass
+
     def get_root(self):
         if self.parent:
             return self.parent.get_root()
         return self
 
     def on_press(self, *args, **kwargs):
+        self.get_root().set_selected(self)
+
+    def on_select(self):
+        pass
+
+    def on_unselect(self):
         pass
 
     def on_release(self, *args, **kwargs):
@@ -108,6 +120,89 @@ class Text(Component):
     def redraw(self):
         self.surface = pygame.Surface(self.size, pygame.SRCALPHA)
         self.surface.blit(self.render, (0, 0))
+
+
+class TextInput(Component):
+    def __init__(self, size, pos, name="", bg_color=None, parent=None, text="", font_color=None):
+        super().__init__(size=size, pos=pos,  bg_color=bg_color, name=name, parent=parent)
+
+        self.components = []
+        self.sizer = Sizer(self)
+        self.sizer.set_alignment(Alignment.CENTER_VERTICAL)
+
+        self.text = text
+        self.text_s = Text(text, size[1]-2, font_color)
+        self.editing = False
+        self.display_bar = True
+        self.counter = 1300
+
+        self.components.append(self.text_s)
+
+    def redraw(self):
+        self.text_s.set_text(self.text)
+        width, height = self.size
+        text_w, text_h = self.text_s.size
+
+        pad = self.text_s.font_size/2
+
+        cursor_w = self.text_s.font_size/7
+        cursor_h = self.text_s.font_size
+
+        cursor_x = text_w
+        cursor_y = 2/2
+        d = text_w+pad
+
+        self.text_s.base_pos = (0, 0)
+        if d > width:
+            diff = d - width
+            self.text_s.base_pos = (-diff, 0)
+            cursor_x = text_w - diff
+
+        char_cursor_padding = 6
+
+        cursor_x += char_cursor_padding
+
+        self.sizer.calc_pos()
+        rect = self.surface.get_rect()
+        pygame.draw.rect(self.surface, self.bg_color, rect)
+
+        if self.editing and self.display_bar:
+            rect = pygame.Rect(
+                cursor_x, cursor_y, cursor_w, cursor_h)
+            pygame.draw.rect(self.surface, self.text_s.font_color, rect)
+
+        self.surface.blit(self.text_s.get_surface(), self.text_s.pos)
+
+    def process(self, dt):
+        if not self.editing:
+            return
+        self.counter -= dt
+        if self.counter < 0:
+            self.counter = 2000
+            self.display_bar = not self.display_bar
+
+    def on_select(self):
+        self.editing = True
+        self.display_bar = True
+
+    def on_unselect(self):
+        self.editing = False
+
+    def on_press(self, button):
+        if button == pygame.BUTTON_LEFT:
+            root: LameUI = self.get_root()
+            root.set_selected(self)
+
+    def handle_event(self, event):
+        # TODO: what to do when event wasnt handled
+        if event.type == pygame.TEXTINPUT:
+            self.text += event.text
+            return
+
+        elif event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_BACKSPACE:
+                self.text = self.text[:-1]
+                return
 
 
 class Button(Component):
@@ -255,16 +350,16 @@ class Slider(Component):
             root: LameUI = self.get_root()
             root.selected_component = self
 
-    def handle_selected(self, mouse_x, mouse_y):
+    def on_release(self):
+        self.get_root().selected_component = None
 
+    def handle_mouse_selected(self, *args):
+        mouse_x, mouse_y = args
         slider_x, slider_y = self.get_abs_pos()
-
         width, height = self.size
         knob_radius = height/2
         bar_width = width - knob_radius*2
-
         value = (mouse_x-(slider_x+knob_radius))/bar_width
-
         value = max(0, min(1, value))
         self.value = value
 
@@ -322,6 +417,13 @@ class Panel(Component):
                 return comp
 
         return self
+
+    def propagate_dt(self, dt):
+        for component in self.components:
+            component.process(dt)
+
+    def process(self, dt):
+        self.propagate_dt(dt)
 
     def get_all_components_of_type(self, component_type: type):
         components = []
@@ -388,7 +490,7 @@ class LameUI(Panel):
         mouse_x, mouse_y = pygame.mouse.get_pos()
 
         if self.selected_component is not None:
-            self.selected_component.handle_selected(mouse_x, mouse_y)
+            self.selected_component.handle_mouse_selected(mouse_x, mouse_y)
 
         hovered_component = self.get_component_at(mouse_x, mouse_y)
 
@@ -402,6 +504,7 @@ class LameUI(Panel):
             button.hovered = False
 
     def handle_events(self):
+        # TODO: what to do when children doesnt handle event
         for event in pygame.event.get():
             if event.type == pygame.VIDEORESIZE:
                 self.resize(event.size)
@@ -410,17 +513,34 @@ class LameUI(Panel):
             elif event.type == pygame.MOUSEBUTTONUP:
                 self.on_mouse_release(event.button)
 
+            elif event.type == pygame.KEYDOWN:
+                if isinstance(self.selected_component, TextInput):
+                    self.selected_component.handle_event(event)
+
+            elif event.type == pygame.TEXTINPUT:
+                if isinstance(self.selected_component, TextInput):
+                    self.selected_component.handle_event(event)
+
+    def set_selected(self, component):
+        if self.selected_component is not None:
+            self.selected_component.on_unselect()
+
+        self.selected_component = component
+        if self.selected_component is not None:
+            self.selected_component.on_select()
+
     def on_mouse_press(self, button):
         mouse_x, mouse_y = pygame.mouse.get_pos()
         hovered_component = self.get_component_at(mouse_x, mouse_y)
 
         if hovered_component is not None:
             hovered_component.on_press(button)
+        else:
+            self.set_selected(None)
 
     def on_mouse_release(self, button):
         if self.selected_component is not None:
             self.selected_component.on_release()
-            self.selected_component = None
         # mouse_x, mouse_y = pygame.mouse.get_pos()
         # hovered_component = self.get_component_at(mouse_x, mouse_y)
 
