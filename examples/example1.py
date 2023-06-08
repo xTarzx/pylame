@@ -57,19 +57,13 @@ while run:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             run = False
-
         elif event.type == pygame.KEYDOWN:
             if event.key == pygame.K_ESCAPE:
                 run = False
+        else:
+            pygame.event.post(event)
 
-        elif event.type == pygame.VIDEORESIZE:
-            lameui.resize(event.size)
-
-        elif event.type == pygame.MOUSEBUTTONDOWN:
-            lameui.on_mouse_press(event.button)
-        elif event.type == pygame.MOUSEBUTTONUP:
-            lameui.on_mouse_release(event.button)
-
+    lameui.handle_events()
     lameui.process_mouse_pos()
 
     lameui.draw_to(screen)
