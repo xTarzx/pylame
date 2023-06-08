@@ -401,8 +401,8 @@ class LameUI(Panel):
         for button in buttons:
             button.hovered = False
 
-    def handle_events(self, events: list[pygame.event.Event]):
-        for event in events:
+    def handle_events(self):
+        for event in pygame.event.get():
             if event.type == pygame.VIDEORESIZE:
                 self.resize(event.size)
             elif event.type == pygame.MOUSEBUTTONDOWN:
