@@ -41,6 +41,7 @@ lameui.add(b_slider)
 run = True
 while run:
 
+    unhandled_events: list[pygame.event.Event] = []
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             run = False
@@ -49,13 +50,18 @@ while run:
             if event.key == pygame.K_ESCAPE:
                 run = False
 
-        elif event.type == pygame.VIDEORESIZE:
-            lameui.resize(event.size)
+        else:
+            unhandled_events.append(event)
 
-        elif event.type == pygame.MOUSEBUTTONDOWN:
-            lameui.on_mouse_press(event.button)
-        elif event.type == pygame.MOUSEBUTTONUP:
-            lameui.on_mouse_release(event.button)
+        # elif event.type == pygame.VIDEORESIZE:
+        #     lameui.resize(event.size)
+
+        # elif event.type == pygame.MOUSEBUTTONDOWN:
+        #     lameui.on_mouse_press(event.button)
+        # elif event.type == pygame.MOUSEBUTTONUP:
+        #     lameui.on_mouse_release(event.button)
+
+    lameui.handle_events(unhandled_events)
 
     title_color = (r_slider.get_value(),
                    g_slider.get_value(), b_slider.get_value())
