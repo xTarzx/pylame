@@ -61,7 +61,9 @@ class Component:
         return self
 
     def on_press(self, *args, **kwargs):
-        self.get_root().set_selected(self)
+        root = self.get_root()
+        if isinstance(root, LameUI):
+            root.set_selected(self)
 
     def on_select(self):
         pass
@@ -190,8 +192,9 @@ class TextInput(Component):
 
     def on_press(self, button):
         if button == pygame.BUTTON_LEFT:
-            root: LameUI = self.get_root()
-            root.set_selected(self)
+            root = self.get_root()
+            if isinstance(root, LameUI):
+                root.set_selected(self)
 
     def handle_event(self, event):
         # TODO: what to do when event wasnt handled
@@ -347,11 +350,15 @@ class Slider(Component):
 
     def on_press(self, button):
         if button == pygame.BUTTON_LEFT:
-            root: LameUI = self.get_root()
-            root.selected_component = self
+            root = self.get_root()
+
+            if isinstance(root, LameUI):
+                root.set_selected(self)
 
     def on_release(self):
-        self.get_root().selected_component = None
+        root = self.get_root()
+        if isinstance(root, LameUI):
+            root.set_selected(None)
 
     def handle_mouse_selected(self, *args):
         mouse_x, mouse_y = args
