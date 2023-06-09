@@ -1,3 +1,3 @@
-PYLAME
+# PYLAME
 
-ui with pygame
+pygame widget library
