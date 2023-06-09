@@ -112,7 +112,7 @@ class Text(Component):
         self.size = self.render.get_size()
 
     def set_text(self, text):
-        self.text = text
+        self.text = str(text)
         self.__render_text()
 
     def set_font_color(self, color):
