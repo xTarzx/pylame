@@ -65,7 +65,6 @@ while run:
 
     lameui.handle_events()
     lameui.process_mouse_pos()
-
     lameui.draw_to(screen)
 
     pygame.display.update()
