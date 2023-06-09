@@ -242,6 +242,9 @@ class Button(Component):
         self.sizer = Sizer(self)
         self.sizer.set_alignment(Alignment.CENTER)
 
+        if font_size is None:
+            font_size = self.size[1]//2
+
         self.text = Text(text, font_size, font_color)
         self.components.append(self.text)
 
