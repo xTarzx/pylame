@@ -196,7 +196,7 @@ class TextInput(Component):
                 self.__delete_char()
 
     def reset_delete_interval(self):
-        self.delete_interval = 100
+        self.delete_interval = 75
 
     def __delete_char(self):
         self.text = self.text[:-1]
