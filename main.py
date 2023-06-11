@@ -13,21 +13,6 @@ FPS = 60
 lameui = LameUI((window_width, window_height),
                 (0, 0), (33, 33, 33), name="lameui")
 
-slider1 = Slider((400, 30), (0, 0), bg_color=None, name="slider",
-                 knob_color=(220, 100, 120), slider_color=(120, 150, 88), min_value=0, max_value=100, start_value=None)
-
-button1 = Button((100, 30), (0, 0), (255, 0, 0), "button1", text="click")
-
-panel1 = Panel((600, 300), (0, 0), (55, 55, 55),
-               name="panel1", border_radius=16)
-panel2 = Panel((500, 250), (0, 0), (88, 88, 88),
-               name="panel2", border_radius=16)
-panel2.add(slider1)
-panel2.add(button1)
-panel1.align(Alignment.CENTER)
-panel1.add(panel2)
-lameui.add(panel1)
-
 
 lameui.align(Alignment.CENTER)
 

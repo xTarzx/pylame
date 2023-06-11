@@ -18,7 +18,7 @@ lameui.align(Alignment.CENTER)
 
 title_color = (240, 240, 240)
 
-title = Text("LameUI", 64, pos=(0, -100))
+title = Text("LameUI", 64, pos=(0, 0))
 
 slider_w, slider_h = 700, 40
 slider_color = (123, 123, 123)
