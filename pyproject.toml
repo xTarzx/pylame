@@ -1,0 +1,10 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "pylame_xTarzx"
+version = "0.0.1"
+authors = [{ name = "Telmo Martins", email = "telmomartins2000@gmail.com" }]
+description = "UI lib for pygame"
+requires-python = ">=3.10"

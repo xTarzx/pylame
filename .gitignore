@@ -2,3 +2,6 @@ __pycache__
 *.txt
 *info
 build
+dist
+.vscode
+*egg-info
